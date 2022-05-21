@@ -1,18 +1,34 @@
 import * as core from '@actions/core'
-import {wait} from './wait'
+import {context, getOctokit} from '@actions/github'
 
 async function run(): Promise<void> {
   try {
-    const ms: string = core.getInput('milliseconds')
-    core.debug(`Waiting ${ms} milliseconds ...`) // debug is only output if you set the secret `ACTIONS_STEP_DEBUG` to true
+    const tag: string = core.getInput('tag')
+    const sha: string = core.getInput('commit-sha')
+    const githubToken: string = core.getInput('token', {required: true})
+    const octokit = getOctokit(githubToken)
 
-    core.debug(new Date().toTimeString())
-    await wait(parseInt(ms, 10))
-    core.debug(new Date().toTimeString())
-
-    core.setOutput('time', new Date().toTimeString())
-  } catch (error) {
-    if (error instanceof Error) core.setFailed(error.message)
+    try {
+      await octokit.rest.git.deleteRef({
+        owner: context.repo.owner,
+        repo: context.repo.repo,
+        ref: `tags/${tag}`
+      })
+    } catch (error: unknown) {
+      octokit.log.info(`The tag doesn't exist yet: ${error}`)
+    }
+    octokit.rest.git.createRef({
+      owner: context.repo.owner,
+      repo: context.repo.repo,
+      ref: `refs/tags/${tag}`,
+      sha
+    })
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      core.setFailed(error.message)
+    } else {
+      core.setFailed('Unknown error occurred')
+    }
   }
 }
 
