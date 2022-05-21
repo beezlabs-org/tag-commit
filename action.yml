@@ -1,11 +1,17 @@
-name: 'Your name here'
-description: 'Provide a description here'
-author: 'Your name or organization here'
+name: 'Tag a commit'
+description: 'Action to tag a commit'
+author: 'Beez Innovation Labs'
 inputs:
-  milliseconds: # change this
+  tag:
+    description: Tag Name
     required: true
-    description: 'input description here'
-    default: 'default value if applicable'
+  commit-sha:
+    description: Commit sha to apply the tag to
+    required: true
+  token:
+    description: PAT for accessing the application repo
+    required: true
+    default: ${{ github.token }}
 runs:
   using: 'node16'
   main: 'dist/index.js'
