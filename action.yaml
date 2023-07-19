@@ -1,0 +1,30 @@
+name: Tag a commit
+description: Tag a commit
+inputs:
+  tag:
+    required: true
+    description: Tag Name
+  commit-sha:
+    required: true
+    description: Commit sha to apply the tag to
+  pat:
+    description: PAT for accessing the other repo
+    required: false
+runs:
+  using: composite
+  steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        token: ${{ inputs.pat || github.token }}
+
+    - name: Create and push tag
+      env:
+        GIT_AUTHOR_NAME: Beez Innovation Labs
+        GIT_COMMITTER_NAME: Beez Innovation Labs
+        GIT_AUTHOR_EMAIL: github@beezlabs.com
+        GIT_COMMITTER_EMAIL: github@beezlabs.com
+      run: |
+        git tag -f ${{ inputs.tag }} ${{ inputs.commit-sha }}
+        git push -f --tags
+      shell: bash
